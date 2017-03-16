@@ -6,11 +6,11 @@ const sort = (str) => str.replace(/\s+/g, '').toLowerCase().split('').sort().joi
 const isAnagram = (str1, str2) => {
     if (str1.trim() === str2.trim()) {
         alert('не являются анаграммами: строки одинаковы');
-        return false;
+        return;
     }
     if (sort(str1) === sort(str2)) {
         alert('анаграммы');
-        return false;
+        return;
     }
 
     alert('не являются анаграммами');
