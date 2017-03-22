@@ -24,7 +24,6 @@ var todoList = [
 	}
 ];
 
-
 var taskModule = function() {
 
 	var _init = function() {
@@ -129,12 +128,30 @@ var taskModule = function() {
 	todoList
 		.map(_addTodoFromTemplate)
 		.forEach(_insertTodoElement);
-
-
+	
 	return {
 		init: _init
 	};
 
 }();
 
-listElement && inputElement && taskModule.init();
+listElement && inputElement && taskModule.init({
+	todoList: [
+		{
+			name: 'Позвонить в сервис',
+			status: 'todo'
+		},
+		{
+			name: 'Купить хлеб',
+			status: 'done'
+		},
+		{
+			name: 'Захватить мир',
+			status: 'todo'
+		},
+		{
+			name: 'Добавить тудушку в список',
+			status: 'todo'
+		}
+	]
+});
