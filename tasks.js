@@ -1,11 +1,12 @@
-var listElement = document.querySelector('.list');
-var itemElementList = listElement.children;
-var templateElement = document.getElementById('todoTemplate');
-var templateContainer = 'content' in templateElement ? templateElement.content : templateElement;
-var inputElement = document.querySelector('.add-task__input');
-var filterBlock = document.querySelector('.filters');
+const listElement = document.querySelector('.list');
+const templateElement = document.getElementById('todoTemplate');
+const templateContainer = 'content' in templateElement ? templateElement.content : templateElement;
+const inputElement = document.querySelector('.add-task__input');
+const filterBlock = document.querySelector('.filters');
+let filterValue = document.querySelector('.filters__item_selected');
 
-var todoList = [
+
+let todoList = [
 	{
 		name: 'Позвонить в сервис',
 		status: 'todo'
@@ -25,56 +26,178 @@ var todoList = [
 ];
 
 
-var taskModule = function() {
-
-	var _init = function() {
+const taskModule = function() {
+	const _init = function() {
 		_eventListeners();
+		_renderList(todoList);
+		_getStatistics();
 	};
 
-	var _eventListeners = function() {
+	const _eventListeners = function() {
 		listElement.addEventListener('click', _onListClick);
 		inputElement.addEventListener('keydown', _onInputKeydown);
+		filterBlock.addEventListener('click', _onFilterClick);
 	};
 
-	var _onListClick = function(event) {
-		var target = event.target;
-		var element;
+	const _onListClick = function(event) {
+		const target = event.target;
 
 		if (_isStatusBtn(target)) {
-			element = target.parentNode;
+			const element = target.parentNode;
 			_changeTodoStatus(element);
 		}
 
 		if (_isDeleteBtn(target)) {
-			element = target.parentNode;
+			const element = target.parentNode;
 			_deleteTodo(element);
 		}
+		_getStatistics();
 	};
 
-	var _isStatusBtn = function(target) {
-		return target.classList.contains('task__status');
+
+	const _onFilterClick = function(event) {
+		const target = event.target;
+		const filterType = target.getAttribute('data-filter');
+
+		if (_isItemActive(target)) {
+
+
+			_changeFilterClass(target);
+
+			const taskList = _filterBy(filterType);
+			listElement.innerHTML = '';
+			_renderList(taskList);
+		}
+	};
+	
+	const _isItemActive = function(target) {
+		return target.classList.contains('filters__item');
 	};
 
-	var _isDeleteBtn = function(target) {
-		return target.classList.contains('task__delete-button');
+
+	const _filterBy = function(status) {
+		let value;
+		switch (status) {
+			case 'todo':
+				value = 'todo';
+				break;
+			case 'done':
+				value = 'done';
+				break;
+			case 'all':
+				return todoList;
+		}
+
+		return todoList.filter(function(todo) {
+			return todo.status === value;
+		})
 	};
 
-	var _changeTodoStatus = function(element) {
-		var isTodo = element.classList.contains('task_todo');
-		_setTodoStatusClassName(element, !isTodo);
+
+	const _changeFilterClass = function(target) {
+		Array.prototype.map.call(filterValue, element => element.classList.remove('filters__item_selected'));
+
+		filterValue = target;
+		target.classList.add('filters__item_selected');
 	};
 
-	var _deleteTodo = function(element) {
-		listElement.removeChild(element);
+	const _addTodoFromTemplate = function(todo) {
+		const newElement = templateContainer.querySelector('.task').cloneNode(true);
+		newElement.querySelector('.task__name').textContent = todo.name;
+		_setTodoStatusClassName(newElement, todo.status === 'todo');
+
+		return newElement;
 	};
 
-	var _setTodoStatusClassName = function(todo, flag) {
+	const _setTodoStatusClassName = function(todo, flag) {
 		todo.classList.toggle('task_todo', flag);
 		todo.classList.toggle('task_done', !flag);
 	};
 
+	const _isStatusBtn = function(target) {
+		return target.classList.contains('task__status');
+	};
 
-	var _insertTodoElement = function(elem) {
+	const _isDeleteBtn = function(target) {
+		return target.classList.contains('task__delete-button');
+	};
+
+	const _changeTodoStatus = function(element) {
+		const isTodo = element.classList.contains('task_todo');
+		const name = element.querySelector('.task__name').textContent;
+		const index = _getTodoIndex(name);
+
+		todoList[index].status = (todoList[index].status) === 'done' ? 'todo' : 'done';
+		_updateList();
+		_setTodoStatusClassName(element, !isTodo);
+	};
+
+	let _getTodoIndex= function(name) {
+
+		for (let i = 0; i < todoList.length; i++) {
+			if (todoList[i].name === name) return i;
+		}
+		return {};
+	};
+
+	let _updateList = function() {
+		const filter = filterValue.getAttribute('data-filter');
+		const newList = _filterBy(filter);
+
+		_renderList(newList);
+	};
+
+	let _renderList = function(list) {
+		listElement.innerHTML = '';
+		list.map(_addTodoFromTemplate).forEach(_insertTodoElement);
+	};
+
+	let _deleteTodo = function(element) {
+		todoList = todoList.filter((x)=>x.name!==element.querySelector('.task__name').textContent);
+		listElement.removeChild(element);
+	};
+
+	let _onInputKeydown = function(event) {
+		if (event.keyCode !== 13) {
+			return;
+		}
+
+		const ENTER_KEYCODE = 13;
+		if (event.keyCode !== ENTER_KEYCODE) {
+			return;
+		}
+
+		const todoName = inputElement.value.trim();
+
+		if (todoName.length === 0 || _checkIfTodoAlreadyExists(todoName)) {
+			return;
+		}
+
+		const todo = _createNewTodo(todoName);
+		todoList.push(todo);
+		_insertTodoElement(_addTodoFromTemplate(todo));
+		inputElement.value = '';
+		_getStatistics();
+		_updateList();
+	};
+
+
+	let _checkIfTodoAlreadyExists = function(todoName) {
+		const todoElements = listElement.querySelectorAll('.task__name');
+		const namesList = Array.prototype.map.call(todoElements, function(element) {
+			return element.textContent;
+		});
+		return namesList.indexOf(todoName) > -1;
+	};
+
+	let _createNewTodo = function(name) {
+		return {
+			name: name,
+			status: 'todo'
+		}
+	};
+
+	let _insertTodoElement = function(elem) {
 		if (listElement.children) {
 			listElement.insertBefore(elem, listElement.firstElementChild);
 		} else {
@@ -82,101 +205,22 @@ var taskModule = function() {
 		}
 	};
 
-	var _onInputKeydown = function(event) {
-		if (event.keyCode !== 13) {
-			return;
-		}
+	let _getStatistics = function() {
+		const st = document.querySelector('.statistic');
+		const stAll = st.querySelector('.statistic__total');
+		const stDone = st.querySelector('.statistic__done');
+		const stLeft = st.querySelector('.statistic__left');
+		const countAll = todoList.length;
 
-		var ENTER_KEYCODE = 13;
-		if (event.keyCode !== ENTER_KEYCODE) {
-			return;
-		}
-
-		var todoName = inputElement.value.trim();
-
-		if (todoName.length === 0 || _checkIfTodoAlreadyExists(todoName)) {
-			return;
-		}
-
-		var todo = _createNewTodo(todoName);
-		_insertTodoElement(_addTodoFromTemplate(todo));
-		inputElement.value = '';
-	};
-
-	var _checkIfTodoAlreadyExists = function(todoName) {
-		var todoElements = listElement.querySelectorAll('.task__name');
-		var namesList = Array.prototype.map.call(todoElements, function (element) {
-			return element.textContent;
+		const done = todoList.filter(function(todo) {
+			return todo.status === 'done';
 		});
-		return namesList.indexOf(todoName) > -1;
+
+		const countDone = done.length;
+		stAll.textContent = countAll;
+		stDone.textContent = countDone;
+		stLeft.textContent = countAll - countDone;
 	};
-
-	var _createNewTodo = function(name) {
-		return {
-			name: name,
-			status: 'todo'
-		}
-	};
-
-	var _addTodoFromTemplate = function(todo) {
-		var newElement = templateContainer.querySelector('.task').cloneNode(true);
-		newElement.querySelector('.task__name').textContent = todo.name;
-		_setTodoStatusClassName(newElement, todo.status === 'todo');
-
-		return newElement;
-	};
-
-	todoList
-		.map(_addTodoFromTemplate)
-		.forEach(_insertTodoElement);
-
-	
-	var _filterByStatus = function(status) {
-		var param;
-		switch (status) {
-			case 'done':
-				param = 0;
-				break;
-			case 'todo':
-				param = 1;
-				break;
-			default:
-				return;
-		}
-		
-		return todoList.filter(function(todo) {
-			return todo.status === param;
-		})
-	};
-	
-	var _onFilterClick = function(e) {
-		var target = e.target;
-		if (target.classList.contains('filters__item')) {
-			_changeFilter(target);
-		}
-
-		_changeList(target);
-		listElement.textContent = '';
-	};
-
-	var _changeList = function(target) {
-		var status = target.getAttribute('data-filter');
-		var itemList = _filterByStatus(status);
-
-
-	};
-
-	var _changeFilter = function(target) {
-		var currentFilter = document.querySelector('.filters__item_selected');
-
-		currentFilter.classList.remove('filters__item_selected');
-		target.classList.add('filters__item_selected');
-	};
-
-
-	// событие вещаем на filters. а не на каждую item отдельно! производительность!
-	filterBlock.addEventListener('click', _onFilterClick);
-
 
 	return {
 		init: _init
@@ -184,4 +228,4 @@ var taskModule = function() {
 
 }();
 
-listElement && inputElement && taskModule.init();
+listElement && inputElement && filterBlock && taskModule.init();
