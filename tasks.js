@@ -60,12 +60,12 @@ const taskModule = function() {
 		const filterType = target.getAttribute('data-filter');
 
 		if (_isItemActive(target)) {
-
+			const taskList = _filterBy(filterType);
 
 			_changeFilterClass(target);
 
-			const taskList = _filterBy(filterType);
-			listElement.innerHTML = '';
+			listElement.textContent = '';
+
 			_renderList(taskList);
 		}
 	};
@@ -88,9 +88,7 @@ const taskModule = function() {
 				return todoList;
 		}
 
-		return todoList.filter(function(todo) {
-			return todo.status === value;
-		})
+		return todoList.filter(todo => todo.status === value);
 	};
 
 
@@ -125,20 +123,17 @@ const taskModule = function() {
 	const _changeTodoStatus = function(element) {
 		const isTodo = element.classList.contains('task_todo');
 		const name = element.querySelector('.task__name').textContent;
-		const index = _getTodoIndex(name);
 
-		todoList[index].status = (todoList[index].status) === 'done' ? 'todo' : 'done';
+		todoList.forEach(todo => {
+			if (todo.name === name) {
+				todo.status = (todo.status) === 'done' ? 'todo' : 'done';
+			}
+		} );
+
 		_updateList();
 		_setTodoStatusClassName(element, !isTodo);
 	};
 
-	let _getTodoIndex= function(name) {
-
-		for (let i = 0; i < todoList.length; i++) {
-			if (todoList[i].name === name) return i;
-		}
-		return {};
-	};
 
 	let _updateList = function() {
 		const filter = filterValue.getAttribute('data-filter');
@@ -153,7 +148,14 @@ const taskModule = function() {
 	};
 
 	let _deleteTodo = function(element) {
-		todoList = todoList.filter((x)=>x.name!==element.querySelector('.task__name').textContent);
+
+		todoList = todoList.filter(function(item) {
+			const elem = element.querySelector('.task__name');
+			if (elem.textContent !== item.name) {
+				return item;
+			}
+		});
+
 		listElement.removeChild(element);
 	};
 
@@ -212,9 +214,7 @@ const taskModule = function() {
 		const stLeft = st.querySelector('.statistic__left');
 		const countAll = todoList.length;
 
-		const done = todoList.filter(function(todo) {
-			return todo.status === 'done';
-		});
+		const done = todoList.filter(todo => todo.status === 'done');
 
 		const countDone = done.length;
 		stAll.textContent = countAll;
