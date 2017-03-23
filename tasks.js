@@ -2,8 +2,8 @@ var listElement = document.querySelector('.list');
 var itemElementList = listElement.children;
 var templateElement = document.getElementById('todoTemplate');
 var templateContainer = 'content' in templateElement ? templateElement.content : templateElement;
-
 var inputElement = document.querySelector('.add-task__input');
+var filterBlock = document.querySelector('.filters');
 
 var todoList = [
 	{
@@ -23,6 +23,7 @@ var todoList = [
 		status: 'todo'
 	}
 ];
+
 
 var taskModule = function() {
 
@@ -108,7 +109,7 @@ var taskModule = function() {
 			return element.textContent;
 		});
 		return namesList.indexOf(todoName) > -1;
-	}
+	};
 
 	var _createNewTodo = function(name) {
 		return {
@@ -128,30 +129,59 @@ var taskModule = function() {
 	todoList
 		.map(_addTodoFromTemplate)
 		.forEach(_insertTodoElement);
+
 	
+	var _filterByStatus = function(status) {
+		var param;
+		switch (status) {
+			case 'done':
+				param = 0;
+				break;
+			case 'todo':
+				param = 1;
+				break;
+			default:
+				return;
+		}
+		
+		return todoList.filter(function(todo) {
+			return todo.status === param;
+		})
+	};
+	
+	var _onFilterClick = function(e) {
+		var target = e.target;
+		if (target.classList.contains('filters__item')) {
+			_changeFilter(target);
+		}
+
+		_changeList(target);
+		listElement.textContent = '';
+	};
+
+	var _changeList = function(target) {
+		var status = target.getAttribute('data-filter');
+		var itemList = _filterByStatus(status);
+
+
+	};
+
+	var _changeFilter = function(target) {
+		var currentFilter = document.querySelector('.filters__item_selected');
+
+		currentFilter.classList.remove('filters__item_selected');
+		target.classList.add('filters__item_selected');
+	};
+
+
+	// событие вещаем на filters. а не на каждую item отдельно! производительность!
+	filterBlock.addEventListener('click', _onFilterClick);
+
+
 	return {
 		init: _init
 	};
 
 }();
 
-listElement && inputElement && taskModule.init({
-	todoList: [
-		{
-			name: 'Позвонить в сервис',
-			status: 'todo'
-		},
-		{
-			name: 'Купить хлеб',
-			status: 'done'
-		},
-		{
-			name: 'Захватить мир',
-			status: 'todo'
-		},
-		{
-			name: 'Добавить тудушку в список',
-			status: 'todo'
-		}
-	]
-});
+listElement && inputElement && taskModule.init();
