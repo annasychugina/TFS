@@ -4,7 +4,7 @@ const templateContainer = 'content' in templateElement ? templateElement.content
 const inputElement = document.querySelector('.add-task__input');
 const filterBlock = document.querySelector('.filters');
 let filterValue = document.querySelector('.filters__item_selected');
-
+const ENTER_KEYCODE = 13;
 
 let todoList = [
 	{
@@ -24,7 +24,6 @@ let todoList = [
 		status: 'todo'
 	}
 ];
-
 
 const taskModule = function() {
 	const _init = function() {
@@ -54,7 +53,6 @@ const taskModule = function() {
 		_getStatistics();
 	};
 
-
 	const _onFilterClick = function(event) {
 		const target = event.target;
 		const filterType = target.getAttribute('data-filter');
@@ -63,9 +61,7 @@ const taskModule = function() {
 			const taskList = _filterBy(filterType);
 
 			_changeFilterClass(target);
-
 			listElement.textContent = '';
-
 			_renderList(taskList);
 		}
 	};
@@ -73,7 +69,6 @@ const taskModule = function() {
 	const _isItemActive = function(target) {
 		return target.classList.contains('filters__item');
 	};
-
 
 	const _filterBy = function(status) {
 		let value;
@@ -84,16 +79,15 @@ const taskModule = function() {
 			case 'done':
 				value = 'done';
 				break;
-			case 'all':
+			default:
 				return todoList;
 		}
 
 		return todoList.filter(todo => todo.status === value);
 	};
 
-
 	const _changeFilterClass = function(target) {
-		Array.prototype.map.call(filterValue, element => element.classList.remove('filters__item_selected'));
+		Array.prototype.map.call(filterValue, item => item.classList.remove('filters__item_selected'));
 
 		filterValue = target;
 		target.classList.add('filters__item_selected');
@@ -128,29 +122,29 @@ const taskModule = function() {
 			if (todo.name === name) {
 				todo.status = (todo.status) === 'done' ? 'todo' : 'done';
 			}
-		} );
+		});
 
 		_updateList();
 		_setTodoStatusClassName(element, !isTodo);
 	};
 
 
-	let _updateList = function() {
+	const _updateList = function() {
 		const filter = filterValue.getAttribute('data-filter');
 		const newList = _filterBy(filter);
 
 		_renderList(newList);
 	};
 
-	let _renderList = function(list) {
+	const _renderList = function(list) {
 		listElement.innerHTML = '';
 		list.map(_addTodoFromTemplate).forEach(_insertTodoElement);
 	};
 
-	let _deleteTodo = function(element) {
-
+	const _deleteTodo = function(element) {
 		todoList = todoList.filter(function(item) {
 			const elem = element.querySelector('.task__name');
+
 			if (elem.textContent !== item.name) {
 				return item;
 			}
@@ -159,12 +153,11 @@ const taskModule = function() {
 		listElement.removeChild(element);
 	};
 
-	let _onInputKeydown = function(event) {
+	const _onInputKeydown = function(event) {
 		if (event.keyCode !== 13) {
 			return;
 		}
 
-		const ENTER_KEYCODE = 13;
 		if (event.keyCode !== ENTER_KEYCODE) {
 			return;
 		}
@@ -184,7 +177,7 @@ const taskModule = function() {
 	};
 
 
-	let _checkIfTodoAlreadyExists = function(todoName) {
+	const _checkIfTodoAlreadyExists = function(todoName) {
 		const todoElements = listElement.querySelectorAll('.task__name');
 		const namesList = Array.prototype.map.call(todoElements, function(element) {
 			return element.textContent;
@@ -192,14 +185,14 @@ const taskModule = function() {
 		return namesList.indexOf(todoName) > -1;
 	};
 
-	let _createNewTodo = function(name) {
+	const _createNewTodo = function(name) {
 		return {
 			name: name,
 			status: 'todo'
 		}
 	};
 
-	let _insertTodoElement = function(elem) {
+	const _insertTodoElement = function(elem) {
 		if (listElement.children) {
 			listElement.insertBefore(elem, listElement.firstElementChild);
 		} else {
@@ -212,11 +205,10 @@ const taskModule = function() {
 		const stAll = st.querySelector('.statistic__total');
 		const stDone = st.querySelector('.statistic__done');
 		const stLeft = st.querySelector('.statistic__left');
-		const countAll = todoList.length;
-
 		const done = todoList.filter(todo => todo.status === 'done');
-
+		const countAll = todoList.length;
 		const countDone = done.length;
+
 		stAll.textContent = countAll;
 		stDone.textContent = countDone;
 		stLeft.textContent = countAll - countDone;
