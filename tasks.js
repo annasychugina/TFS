@@ -4,6 +4,7 @@ const templateContainer = 'content' in templateElement ? templateElement.content
 const inputElement = document.querySelector('.add-task__input');
 const filterBlock = document.querySelector('.filters');
 let filterValue = document.querySelector('.filters__item_selected');
+
 const ENTER_KEYCODE = 13;
 
 let todoList = [
@@ -169,9 +170,12 @@ const taskModule = function() {
 		}
 
 		const todo = _createNewTodo(todoName);
+
 		todoList.push(todo);
+
 		_insertTodoElement(_addTodoFromTemplate(todo));
 		inputElement.value = '';
+
 		_getStatistics();
 		_updateList();
 	};
@@ -192,26 +196,29 @@ const taskModule = function() {
 		}
 	};
 
+	const _getStatistics = function() {
+		const st = document.querySelector('.statistic');
+		const statistics = {
+			all: st.querySelector('.statistic__total'),
+			done: st.querySelector('.statistic__done'),
+			todo: st.querySelector('.statistic__left'),
+		};
+
+		const done = todoList.filter(todo => todo.status === 'done');
+		const countAll = todoList.length;
+		const countDone = done.length;
+
+		statistics.all.textContent = countAll;
+		statistics.done.textContent = countDone;
+		statistics.todo.textContent = countAll - countDone;
+	};
+
 	const _insertTodoElement = function(elem) {
 		if (listElement.children) {
 			listElement.insertBefore(elem, listElement.firstElementChild);
 		} else {
 			listElement.appendChild(elem);
 		}
-	};
-
-	let _getStatistics = function() {
-		const st = document.querySelector('.statistic');
-		const stAll = st.querySelector('.statistic__total');
-		const stDone = st.querySelector('.statistic__done');
-		const stLeft = st.querySelector('.statistic__left');
-		const done = todoList.filter(todo => todo.status === 'done');
-		const countAll = todoList.length;
-		const countDone = done.length;
-
-		stAll.textContent = countAll;
-		stDone.textContent = countDone;
-		stLeft.textContent = countAll - countDone;
 	};
 
 	return {
