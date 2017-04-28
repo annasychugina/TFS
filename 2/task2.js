@@ -1,13 +1,14 @@
 let t2 = function intersection(arr1, arr2) {
     let arr = [];
 
-    arr1.map(function(elem) {
-        if (arr2.indexOf(elem) >= 0) {
-            arr.push(elem);
-        }
-    });
+	arr1.forEach(function(item){
+		arr[item] = true;
+	});
 
-    return arr;
+	return arr2.filter(function(item) {
+		return arr[item];
+	})
+
 
 }([1, 3, 5, 7, 9],[1, 2, 3, 4]);
 

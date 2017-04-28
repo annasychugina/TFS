@@ -1,10 +1,5 @@
-let t1 = function toBinary(n, s) {
-    if (n === 0) {
-
-        return s;
-    } else {
-
-        return toBinary(~~(n / 2), (n % 2) + s);
-    }
+let t1 = function toBinary(n) {
+	return (n === 0) ? '' : toBinary(Math.floor(n / 2)) + (n % 2).toString();
 }(25, "");
-    console.log(t1);
+
+console.log(t1);
