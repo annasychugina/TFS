@@ -105,15 +105,16 @@ var statsDonelElement = statsElement.querySelector('.statistic__done');
 var statsTodoElement = statsElement.querySelector('.statistic__left');
 var statsTotalElement = statsElement.querySelector('.statistic__total');
 
-class Statistics {
-	constructor() {
-		let tasksDone = todoList.filter((item) => {
-			return item.status === "done";
-		}).length;
 
-		this.todo = todoList.length - tasksDone;
-		this.done = tasksDone;
+
+
+class Statistics {
+	constructor(done = 0, todo = 0) {
+		this.done = done;
+		this.todo = todo;
+
 	}
+
 
 	renderStats() {
 		statsDonelElement.textContent = this.done;
@@ -359,11 +360,8 @@ var tasksDone = todoList.filter(function (item) {
 	return item.status === 'done';
 }).length;
 
-// stats = {
-//     done: tasksDone,
-//     todo: todoList.length - tasksDone
-// };
-// renderStats();
+const done =  todoList.filter(item => item.status === "done").length;
+const todo = todoList.length - tasksDone;
+const stats = new Statistics(done, todo);
 
-let statistics = new Statistics();
 statistics.renderStats();

@@ -2,18 +2,16 @@ var randomButtonElement = document.getElementById('randomize');
 var randomUserElement = document.getElementById('user');
 var errorElement = document.getElementById('error');
 
-randomButtonElement.onclick = function () {
-	return new Promise((resolve, reject) => {
-		fetch('https://api.github.com/users')
-			.then(
-				response => {
-					if (response.status != 200) {
-						reject(new Error('Ошибка ' + response.status));
-					} else {
-						resolve(response.json());
-					}
-				})
-	})
+randomButtonElement.onclick = function() {
+	fetch('https://api.github.com/users')
+		.then(
+			response => {
+				if (response.status != 200) {
+					return new Error('Ошибка ' + response.status);
+				} else {
+					return response.json();
+				}
+			})
 		.then(data => {
 			var user = data[Math.floor(Math.random() * data.length)];
 			loadImage(user.avatar_url, function() {
@@ -21,6 +19,10 @@ randomButtonElement.onclick = function () {
 				drawUser(user)
 			});
 		})
+		.then(user => loadImage(user)).then(loadedUser => {
+		hideError();
+		drawUser(loadedUser);
+	})
 		.catch(error => showError(error))
 };
 
@@ -37,16 +39,18 @@ function hideError() {
 
 
 function loadImage(imageUrl, successCallback, errorCallback) {
-	var img = new Image();
+	return new Promise(function(resolve, reject) {
+		var img = new Image();
 
-	img.onload = function () {
-		successCallback(img);
-	};
+		img.onload = function() {
+			successCallback(img);
+		};
 
-	img.onerror = function () {
-		errorCallback(new Error('Что-то пошло не так'));
-	};
-	img.src = imageUrl;
+		img.onerror = function() {
+			errorCallback(new Error('Что-то пошло не так'));
+		};
+		img.src = imageUrl;
+	});
 }
 
 function drawUser(data) {

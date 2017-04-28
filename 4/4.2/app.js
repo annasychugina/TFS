@@ -49,7 +49,7 @@ function getDay(deadline) {
     var mm = deadline.getMonth() + 1;
     var yy = deadline.getFullYear() % 100;
 
-    return `${getValue(dd)}/${getValue(mm)}/${yy}`;
+    return `${getValue(dd)}/${getValue(mm)}/${getValue(yy)}`;
 }
 
 function getTime(deadline) {
